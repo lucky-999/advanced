@@ -1,52 +1,89 @@
-test('obj', () => {
-    const received = mySort({name: 'мечник', health: 10, level: 2, attack: 80, defence: 40}, ["name", "level"]);
-    const expected = [
-        {key: "name", value: "мечник"},
-        {key: "level", value: 2}, 
-        {key: "attack", value: 80}, 
-        {key: "defence", value: 40}, 
-        {key: "health", value: 10} 
-      ]
+import getCharacterPropsByOrder from '../advanced';
 
-      expect(received).toEqual(expected);
+test('getCharacterPropsByOrder - no or incorrect parameter character', () => {
+  expect(getCharacterPropsByOrder()).toEqual([]);
+  expect(getCharacterPropsByOrder(true)).toEqual([]);
 });
 
-test('skill', () => {
-    const received = skill({
-        name: 'Лучник',
-        type: 'Bowman',
-        health: 50,
-        level: 3,
-        attack: 40,
-        defence: 10,
-        special: [
-          {
-            id: 8,
-            name: 'Двойной выстрел',
-            icon: 'http://...',
-            description: 'Двойной выстрел наносит двойной урон'
-          }, 
-          {
-            id: 9,
-            name: 'Нокаутирующий удар',
-            icon: 'http://...'
-          }
-        ]	
-      });
+test('getCharacterPropsByOrder - parameter character has no own properties', () => {
+  const data = Object.create({ proto: true });
+  getCharacterPropsByOrder(data);
+  expect(data).not.toHaveProperty('attack');
+  expect(data).toHaveProperty('proto');
+});
 
-      const expected = [
-        {
-            id: 8,
-            name: 'Двойной выстрел',
-            icon: 'http://...',
-            description: 'Двойной выстрел наносит двойной урон'
-        }, 
-        {
-            id: 9,
-            name: 'Нокаутирующий удар',
-            icon: 'http://...',
-            description: 'Описание недоступно'
-        }
-    ];
-    expect(received).toEqual(expected);
-})
+test('getCharacterPropsByOrder - throw (incorrect parameter sortOrder)', () => {
+  expect(() => {
+    getCharacterPropsByOrder({
+      health: 10,
+      level: 2,
+      name: 'мечник',
+      attack: 80,
+      defence: 40,
+    }, true);
+  }).toThrowError(Error);
+});
+
+test('getCharacterPropsByOrder - no parameter sortOrder', () => {
+  expect(getCharacterPropsByOrder({
+    health: 10,
+    level: 2,
+    name: 'мечник',
+    attack: 80,
+    defence: 40,
+  })).toEqual([
+    { key: 'attack', value: 80 },
+    { key: 'defence', value: 40 },
+    { key: 'health', value: 10 },
+    { key: 'level', value: 2 },
+    { key: 'name', value: 'мечник' },
+  ]);
+});
+
+test('getCharacterPropsByOrder - one value in sortOrder', () => {
+  expect(getCharacterPropsByOrder({
+    health: 10,
+    level: 2,
+    name: 'мечник',
+    attack: 80,
+    defence: 40,
+  }, ['level'])).toEqual([
+    { key: 'level', value: 2 },
+    { key: 'attack', value: 80 },
+    { key: 'defence', value: 40 },
+    { key: 'health', value: 10 },
+    { key: 'name', value: 'мечник' },
+  ]);
+});
+
+test('getCharacterPropsByOrder - several values in sortOrder', () => {
+  expect(getCharacterPropsByOrder({
+    health: 10,
+    level: 2,
+    name: 'мечник',
+    attack: 80,
+    defence: 40,
+  }, ['name', 'level'])).toEqual([
+    { key: 'name', value: 'мечник' },
+    { key: 'level', value: 2 },
+    { key: 'attack', value: 80 },
+    { key: 'defence', value: 40 },
+    { key: 'health', value: 10 },
+  ]);
+});
+
+test('getCharacterPropsByOrder - all values in sortOrder like in character', () => {
+  expect(getCharacterPropsByOrder({
+    health: 10,
+    level: 2,
+    name: 'мечник',
+    attack: 80,
+    defence: 40,
+  }, ['name', 'level', 'defence', 'attack', 'health'])).toEqual([
+    { key: 'name', value: 'мечник' },
+    { key: 'level', value: 2 },
+    { key: 'defence', value: 40 },
+    { key: 'attack', value: 80 },
+    { key: 'health', value: 10 },
+  ]);
+});

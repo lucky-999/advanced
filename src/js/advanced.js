@@ -1,53 +1,45 @@
-export default function mySort(obj, [prop1, prop2]) {
-    
-    let array = [];
-    let myArray = [];
-    
-    for (let prop in obj) {
-        if (obj.hasOwnProperty(prop)) {
-            if (prop == prop1) {
-                let myObj = {};
-                myObj.key = prop;
-                myObj.value = obj[prop];
-                myArray.push(myObj);
-            }
-        }
-        
+export default function getCharacterPropsByOrder(character, sortOrder = []) {
+    if (!Array.isArray(sortOrder)) throw new Error('Некорректный параметр sortOrder, требуется массив свойств для сортировки');
+  
+    const outArray = [];
+  
+    for (const key in character) {
+      if (Object.prototype.hasOwnProperty.call(character, key)) {
+        outArray.push({ key, value: character[key] });
+      }
     }
-    
-    for (let prop in obj) {
-        if (obj.hasOwnProperty(prop)) {
-            if (prop == prop2) {
-                let myObj = {};
-                myObj.key = prop;
-                myObj.value = obj[prop];
-                myArray.push(myObj);
-            }
+  
+    let countSortProps = 0;
+    sortOrder.forEach((sortValue) => {
+      outArray.filter((value, index) => {
+        if (sortValue === value.key) {
+          // перемещаем элемент согласно позиции сортировки
+          outArray.splice(countSortProps, 0, outArray.splice(index, 1).shift());
+          countSortProps += 1;
         }
-        
-    }
-    
-    for (let prop in obj) {
-        if (prop == prop1 || prop == prop2) {
-            continue;
-        }
-        if (obj.hasOwnProperty(prop)) {
-            let myObj = {};
-            myObj.key = prop;
-            myObj.value = obj[prop];
-            array.push(myObj);
-        }
-    }
-    
-    array.sort(function(a, b){
-        let nameA = a.key.toLowerCase(), nameB=b.key.toLowerCase()
-        if (nameA < nameB) 
-          return -1;
-        if (nameA > nameB)
-          return 1;
-        return 0;
+        return outArray;
+      });
     });
-    
-    const merged = myArray.concat(array);
-    return merged;
-    }
+  
+    // сортируем "остаток" массива по алфавиту
+    const sortPartArray = outArray.slice(countSortProps)
+      .sort((a, b) => a.key.toString().localeCompare(b.key.toString()));
+  
+    return outArray.splice(0, countSortProps).concat(sortPartArray);
+  }
+  
+  const data = {
+    health: 10,
+    level: 2,
+    name: 'мечник',
+    attack: 80,
+    defence: 40,
+  };
+  
+  try {
+    const props = getCharacterPropsByOrder(data, ['name', 'level']);
+    console.log(props);
+    getCharacterPropsByOrder(data, 'data');
+  } catch (error) {
+    console.error(error.message);
+  }
